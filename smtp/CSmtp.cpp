@@ -297,7 +297,7 @@ CSmtp::~CSmtp()
 // AUTHOR/DATE: JP 2010-01-28
 //							JP 2010-07-07
 ////////////////////////////////////////////////////////////////////////////////
-void CSmtp::AddAttachment(const char *Path)
+void CSmtp::AddAttachment(const wchar_t* Path)
 {
 	assert(Path);
 	Attachments.insert(Attachments.end(), Path);
@@ -548,8 +548,9 @@ void CSmtp::Send()
 	char *FileBuf = NULL;
 	FILE* hFile = NULL;
 	unsigned long int FileSize,TotalSize,MsgPart;
-	string FileName,EncodedFileName;
-	string::size_type pos;
+	wstring FileName;
+	string EncodedFileName;
+	wstring::size_type pos;
 
 	// ***** CONNECTING TO SMTP SERVER *****
 
@@ -570,7 +571,7 @@ void CSmtp::Send()
 		for(FileId=0;FileId<Attachments.size();FileId++)
 		{
 			// opening the file:
-			hFile = fopen(Attachments[FileId].c_str(), "rb");
+			hFile = _wfopen(Attachments[FileId].c_str(), L"rb");
 			if(hFile == NULL)
 				throw ECSmtp(ECSmtp::FILE_NOT_EXIST);
 			
@@ -655,16 +656,16 @@ void CSmtp::Send()
 		for(FileId=0;FileId<Attachments.size();FileId++)
 		{
 #ifndef LINUX
-			pos = Attachments[FileId].find_last_of("\\");
+			pos = Attachments[FileId].find_last_of(L"\\");
 #else
-			pos = Attachments[FileId].find_last_of("/");
+			pos = Attachments[FileId].find_last_of(L"/");
 #endif
-			if(pos == string::npos) FileName = Attachments[FileId];
+			if(pos == wstring::npos) FileName = Attachments[FileId];
 			else FileName = Attachments[FileId].substr(pos+1);
 
             //RFC 2047 - Use UTF-8 charset,base64 encode.
             EncodedFileName = "=?UTF-8?B?";
-            EncodedFileName += base64_encode((unsigned char *) FileName.c_str(), FileName.size());
+            EncodedFileName += base64_encode(FileName.c_str(), FileName.size());
             EncodedFileName += "?=";
 
 			snprintf(SendBuf, BUFFER_SIZE, "--%s\r\n", BOUNDARY_TEXT);
@@ -680,7 +681,7 @@ void CSmtp::Send()
 			SendData(pEntry);
 
 			// opening the file:
-			hFile = fopen(Attachments[FileId].c_str(), "rb");
+			hFile = _wfopen(Attachments[FileId].c_str(), L"rb");
 			if(hFile == NULL)
 				throw ECSmtp(ECSmtp::FILE_NOT_EXIST);
 			

@@ -187,7 +187,7 @@ public:
 	void AddRecipient(const char *email, const char *name=NULL);
 	void AddBCCRecipient(const char *email, const char *name=NULL);
 	void AddCCRecipient(const char *email, const char *name=NULL);    
-	void AddAttachment(const char *path);   
+	void AddAttachment(const wchar_t* path);
 	void AddMsgLine(const wchar_t* text);
 	void ClearMessage();
 	bool ConnectRemoteServer(const char* szServer, const unsigned short nPort_=0,
@@ -260,7 +260,7 @@ private:
 	std::vector<Recipient> Recipients;
 	std::vector<Recipient> CCRecipients;
 	std::vector<Recipient> BCCRecipients;
-	std::vector<std::string> Attachments;
+	std::vector<std::wstring> Attachments;
 	std::vector<std::wstring> MsgBody;
  
 	void ReceiveData(Command_Entry* pEntry);
