@@ -184,11 +184,11 @@ public:
 	CSmtp();
 	virtual ~CSmtp();
 
-	void AddRecipient(const char *email, const char *name=NULL);
-	void AddBCCRecipient(const char *email, const char *name=NULL);
-	void AddCCRecipient(const char *email, const char *name=NULL);    
-	void AddAttachment(const char *path);   
-	void AddMsgLine(const char* text);
+	void AddRecipient(const char *email, const wchar_t *name=NULL);
+	void AddBCCRecipient(const char *email, const wchar_t *name=NULL);
+	void AddCCRecipient(const char *email, const wchar_t *name=NULL);
+	void AddAttachment(const wchar_t* path);
+	void AddMsgLine(const wchar_t* text);
 	void ClearMessage();
 	bool ConnectRemoteServer(const char* szServer, const unsigned short nPort_=0,
 							 SMTP_SECURITY_TYPE securityType=DO_NOT_SET,
@@ -201,25 +201,25 @@ public:
 	void DelAttachments(void);
 	void DelMsgLines(void);
 	void DelMsgLine(unsigned int line);
-	void ModMsgLine(unsigned int line,const char* text);
+	void ModMsgLine(unsigned int line,const wchar_t* text);
 	unsigned int GetBCCRecipientCount() const;    
 	unsigned int GetCCRecipientCount() const;
 	unsigned int GetRecipientCount() const;    
 	const char* GetLocalHostIP() const;
 	const char* GetLocalHostName();
-	const char* GetMsgLineText(unsigned int line) const;
+	const wchar_t* GetMsgLineText(unsigned int line) const;
 	unsigned int GetMsgLines(void) const;
 	const char* GetReplyTo() const;
 	const char* GetMailFrom() const;
-	const char* GetSenderName() const;
-	const char* GetSubject() const;
+	const wchar_t* GetSenderName() const;
+	const wchar_t* GetSubject() const;
 	const char* GetXMailer() const;
 	CSmptXPriority GetXPriority() const;
 	void Send();
 	void SetCharSet(const char *sCharSet);
 	void SetLocalHostName(const char *sLocalHostName);
-	void SetSubject(const char*);
-	void SetSenderName(const char*);
+	void SetSubject(const wchar_t*);
+	void SetSenderName(const wchar_t*);
 	void SetSenderMail(const char*);
 	void SetReplyTo(const char*);
 	void SetReadReceipt(bool requestReceipt=true);
@@ -232,8 +232,8 @@ public:
 private:	
 	std::string m_sLocalHostName;
 	std::string m_sMailFrom;
-	std::string m_sNameFrom;
-	std::string m_sSubject;
+	std::wstring m_sNameFrom;
+	std::wstring m_sSubject;
 	std::string m_sCharSet;
 	std::string m_sXMailer;
 	std::string m_sReplyTo;
@@ -253,15 +253,15 @@ private:
 
 	struct Recipient
 	{
-		std::string Name;
+		std::wstring Name;
 		std::string Mail;
 	};
 
 	std::vector<Recipient> Recipients;
 	std::vector<Recipient> CCRecipients;
 	std::vector<Recipient> BCCRecipients;
-	std::vector<std::string> Attachments;
-	std::vector<std::string> MsgBody;
+	std::vector<std::wstring> Attachments;
+	std::vector<std::wstring> MsgBody;
  
 	void ReceiveData(Command_Entry* pEntry);
 	void SendData(Command_Entry* pEntry);

@@ -23,7 +23,7 @@
 // Revision History:
 // - Version 2.4: Updated with fixes reported as of 22 Oct 2015
 //     > Fixed issues with files being left opened and buffer not being deleted if an error occurs as discussed here: http://www.codeproject.com/Messages/4651730/Re-File-attachment.aspx
-//       - Thanks to Josep Solà
+//       - Thanks to Josep Sol?
 //     > Fixed issue with opening attachments as discussed here: http://www.codeproject.com/Messages/4640325/File-path-mistakenly-ommitted-from-file-name-when-.aspx
 //       - Thanks to Graham
 //     > Fixed potential memory leak as discussed here: http://www.codeproject.com/Messages/5010012/Memory-leaks.aspx
@@ -201,6 +201,15 @@ unsigned char* CharToUnsignedChar(const char *strIn)
 	return strOut;
 }
 
+// =?UTF-8?B? ... ?= Çü½ÄÀ¸·Î ¹ÝÈ¯
+std::string strToUtf8_Base64(const std::wstring& str)
+{
+	std::string retStr("=?UTF-8?B?");
+	retStr.append(base64_encode(str.c_str(), str.size()));
+	retStr.append("?=");
+	return retStr;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 //        NAME: CSmtp
 // DESCRIPTION: Constructor of CSmtp class.
@@ -250,7 +259,7 @@ CSmtp::CSmtp()
 	m_bHTML = false;
 	m_bReadReceipt = false;
 
-	m_sCharSet = "US-ASCII";
+	m_sCharSet = "UTF-8";
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -297,7 +306,7 @@ CSmtp::~CSmtp()
 // AUTHOR/DATE: JP 2010-01-28
 //							JP 2010-07-07
 ////////////////////////////////////////////////////////////////////////////////
-void CSmtp::AddAttachment(const char *Path)
+void CSmtp::AddAttachment(const wchar_t* Path)
 {
 	assert(Path);
 	Attachments.insert(Attachments.end(), Path);
@@ -315,7 +324,7 @@ void CSmtp::AddAttachment(const char *Path)
 // AUTHOR/DATE: JP 2010-01-28
 //							JP 2010-07-07
 ////////////////////////////////////////////////////////////////////////////////
-void CSmtp::AddRecipient(const char *email, const char *name)
+void CSmtp::AddRecipient(const char *email, const wchar_t *name)
 {	
 	if(!email)
 		throw ECSmtp(ECSmtp::UNDEF_RECIPIENT_MAIL);
@@ -340,7 +349,7 @@ void CSmtp::AddRecipient(const char *email, const char *name)
 // AUTHOR/DATE: JP 2010-01-28
 //							JP 2010-07-07
 ////////////////////////////////////////////////////////////////////////////////
-void CSmtp::AddCCRecipient(const char *email, const char *name)
+void CSmtp::AddCCRecipient(const char *email, const wchar_t *name)
 {	
 	if(!email)
 		throw ECSmtp(ECSmtp::UNDEF_RECIPIENT_MAIL);
@@ -365,7 +374,7 @@ void CSmtp::AddCCRecipient(const char *email, const char *name)
 // AUTHOR/DATE: JP 2010-01-28
 //							JP 2010-07-07
 ////////////////////////////////////////////////////////////////////////////////
-void CSmtp::AddBCCRecipient(const char *email, const char *name)
+void CSmtp::AddBCCRecipient(const char *email, const wchar_t *name)
 {	
 	if(!email)
 		throw ECSmtp(ECSmtp::UNDEF_RECIPIENT_MAIL);
@@ -389,7 +398,7 @@ void CSmtp::AddBCCRecipient(const char *email, const char *name)
 // AUTHOR/DATE: JP 2010-01-28
 //							JP 2010-07-07
 ////////////////////////////////////////////////////////////////////////////////
-void CSmtp::AddMsgLine(const char* Text)
+void CSmtp::AddMsgLine(const wchar_t* Text)
 {
 	MsgBody.insert(MsgBody.end(), Text);
 }
@@ -502,13 +511,13 @@ void CSmtp::DelAttachments()
 //      AUTHOR: Jakub Piwowarczyk
 // AUTHOR/DATE: JP 2010-07-07
 ////////////////////////////////////////////////////////////////////////////////
-void CSmtp::ModMsgLine(unsigned int Line,const char* Text)
+void CSmtp::ModMsgLine(unsigned int Line,const wchar_t* Text)
 {
 	if(Text)
 	{
 		if(Line >= MsgBody.size())
 			throw ECSmtp(ECSmtp::OUT_OF_MSG_RANGE);
-		MsgBody.at(Line) = std::string(Text);
+		MsgBody.at(Line) = std::wstring(Text);
 	}
 }
 
@@ -548,8 +557,9 @@ void CSmtp::Send()
 	char *FileBuf = NULL;
 	FILE* hFile = NULL;
 	unsigned long int FileSize,TotalSize,MsgPart;
-	string FileName,EncodedFileName;
-	string::size_type pos;
+	wstring FileName;
+	string EncodedFileName;
+	wstring::size_type pos;
 
 	// ***** CONNECTING TO SMTP SERVER *****
 
@@ -570,7 +580,7 @@ void CSmtp::Send()
 		for(FileId=0;FileId<Attachments.size();FileId++)
 		{
 			// opening the file:
-			hFile = fopen(Attachments[FileId].c_str(), "rb");
+			hFile = _wfopen(Attachments[FileId].c_str(), L"rb");
 			if(hFile == NULL)
 				throw ECSmtp(ECSmtp::FILE_NOT_EXIST);
 			
@@ -636,11 +646,14 @@ void CSmtp::Send()
 		// send text message
 		if(GetMsgLines())
 		{
-			for(i=0;i<GetMsgLines();i++)
+			std::wstring getText;
+			for (i = 0; i < GetMsgLines(); i++)
 			{
-				snprintf(SendBuf, BUFFER_SIZE, "%s\r\n",GetMsgLineText(i));
-				SendData(pEntry);
+				getText.append(GetMsgLineText(i));
+				if (i < GetMsgLines()-1) { getText.append(L"\r\n"); }
 			}
+			snprintf(SendBuf, BUFFER_SIZE, "%s\r\n", base64_encode(getText.c_str(), getText.length()).c_str());
+			SendData(pEntry);
 		}
 		else
 		{
@@ -652,17 +665,15 @@ void CSmtp::Send()
 		for(FileId=0;FileId<Attachments.size();FileId++)
 		{
 #ifndef LINUX
-			pos = Attachments[FileId].find_last_of("\\");
+			pos = Attachments[FileId].find_last_of(L"\\");
 #else
-			pos = Attachments[FileId].find_last_of("/");
+			pos = Attachments[FileId].find_last_of(L"/");
 #endif
-			if(pos == string::npos) FileName = Attachments[FileId];
+			if(pos == wstring::npos) FileName = Attachments[FileId];
 			else FileName = Attachments[FileId].substr(pos+1);
 
             //RFC 2047 - Use UTF-8 charset,base64 encode.
-            EncodedFileName = "=?UTF-8?B?";
-            EncodedFileName += base64_encode((unsigned char *) FileName.c_str(), FileName.size());
-            EncodedFileName += "?=";
+			EncodedFileName = strToUtf8_Base64(FileName);
 
 			snprintf(SendBuf, BUFFER_SIZE, "--%s\r\n", BOUNDARY_TEXT);
 			strcat(SendBuf, "Content-Type: application/x-msdownload; name=\"");
@@ -677,7 +688,7 @@ void CSmtp::Send()
 			SendData(pEntry);
 
 			// opening the file:
-			hFile = fopen(Attachments[FileId].c_str(), "rb");
+			hFile = _wfopen(Attachments[FileId].c_str(), L"rb");
 			if(hFile == NULL)
 				throw ECSmtp(ECSmtp::FILE_NOT_EXIST);
 			
@@ -1296,7 +1307,7 @@ void CSmtp::FormatHeader(char* header)
 		{
 			if(i > 0)
 				to.append(",");
-			to += Recipients[i].Name;
+			to += strToUtf8_Base64(Recipients[i].Name);
 			to.append("<");
 			to += Recipients[i].Mail;
 			to.append(">");
@@ -1311,7 +1322,7 @@ void CSmtp::FormatHeader(char* header)
 		{
 			if(i > 0)
 				cc. append(",");
-			cc += CCRecipients[i].Name;
+			cc += strToUtf8_Base64(CCRecipients[i].Name);
 			cc.append("<");
 			cc += CCRecipients[i].Mail;
 			cc.append(">");
@@ -1327,7 +1338,7 @@ void CSmtp::FormatHeader(char* header)
 	if(!m_sMailFrom.size()) throw ECSmtp(ECSmtp::UNDEF_MAIL_FROM);
 	 
 	strcat(header,"From: ");
-	if(m_sNameFrom.size()) strcat(header, m_sNameFrom.c_str());
+	if(m_sNameFrom.size()) strcat(header, strToUtf8_Base64(m_sNameFrom).c_str());
 	 
 	strcat(header," <");
 	strcat(header,m_sMailFrom.c_str());
@@ -1354,7 +1365,7 @@ void CSmtp::FormatHeader(char* header)
 	{
 		strcat(header, "Disposition-Notification-To: ");
 		if(m_sReplyTo.size()) strcat(header, m_sReplyTo.c_str());
-		else strcat(header, m_sNameFrom.c_str());
+		else strcat(header, strToUtf8_Base64(m_sNameFrom).c_str());
 		strcat(header, "\r\n");
 	}
 
@@ -1399,8 +1410,8 @@ void CSmtp::FormatHeader(char* header)
 		strcat(header, "Subject:  ");
 	else
 	{
-	  strcat(header, "Subject: ");
-	  strcat(header, m_sSubject.c_str());
+		strcat(header, "Subject:");
+		strcat(header, strToUtf8_Base64(m_sSubject).c_str());
 	}
 	strcat(header, "\r\n");
 	
@@ -1412,7 +1423,7 @@ void CSmtp::FormatHeader(char* header)
 		else strcat(header, "Content-type: text/plain; charset=\"");
 		strcat(header, m_sCharSet.c_str());
 		strcat(header, "\"\r\n");
-		strcat(header,"Content-Transfer-Encoding: 7bit\r\n");
+		strcat(header,"Content-Transfer-Encoding: base64\r\n");
 		strcat(SendBuf,"\r\n");
 	}
 	else
@@ -1429,7 +1440,7 @@ void CSmtp::FormatHeader(char* header)
 		else strcat(SendBuf,"Content-type: text/plain; charset=");
 		strcat(header, m_sCharSet.c_str());
 		strcat(header, "\r\n");
-		strcat(SendBuf,"Content-Transfer-Encoding: 7bit\r\n");
+		strcat(SendBuf,"Content-Transfer-Encoding: base64\r\n");
 		strcat(SendBuf,"\r\n");
 	}
 
@@ -1671,7 +1682,7 @@ const char* CSmtp::GetMailFrom() const
 //      AUTHOR: Jakub Piwowarczyk
 // AUTHOR/DATE: JP 2010-01-28
 ////////////////////////////////////////////////////////////////////////////////
-const char* CSmtp::GetSenderName() const
+const wchar_t* CSmtp::GetSenderName() const
 {
 	return m_sNameFrom.c_str();
 }
@@ -1686,7 +1697,7 @@ const char* CSmtp::GetSenderName() const
 //      AUTHOR: Jakub Piwowarczyk
 // AUTHOR/DATE: JP 2010-01-28
 ////////////////////////////////////////////////////////////////////////////////
-const char* CSmtp::GetSubject() const
+const wchar_t* CSmtp::GetSubject() const
 {
 	return m_sSubject.c_str();
 }
@@ -1721,7 +1732,7 @@ CSmptXPriority CSmtp::GetXPriority() const
 	return m_iXPriority;
 }
 
-const char* CSmtp::GetMsgLineText(unsigned int Line) const
+const wchar_t* CSmtp::GetMsgLineText(unsigned int Line) const
 {
 	if(Line >= MsgBody.size())
 		throw ECSmtp(ECSmtp::OUT_OF_MSG_RANGE);
@@ -1837,7 +1848,7 @@ void CSmtp::SetSenderMail(const char *EMail)
 // AUTHOR/DATE: JP 2010-01-28
 //							JP 2010-07-08
 ////////////////////////////////////////////////////////////////////////////////
-void CSmtp::SetSenderName(const char *Name)
+void CSmtp::SetSenderName(const wchar_t *Name)
 {
 	m_sNameFrom = Name;
 }
@@ -1853,7 +1864,7 @@ void CSmtp::SetSenderName(const char *Name)
 // AUTHOR/DATE: JP 2010-01-28
 //							JP 2010-07-08
 ////////////////////////////////////////////////////////////////////////////////
-void CSmtp::SetSubject(const char *Subject)
+void CSmtp::SetSubject(const wchar_t *Subject)
 {
 	m_sSubject = Subject;
 }
