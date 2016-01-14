@@ -23,7 +23,7 @@
 // Revision History:
 // - Version 2.4: Updated with fixes reported as of 22 Oct 2015
 //     > Fixed issues with files being left opened and buffer not being deleted if an error occurs as discussed here: http://www.codeproject.com/Messages/4651730/Re-File-attachment.aspx
-//       - Thanks to Josep Solà
+//       - Thanks to Josep Sol?
 //     > Fixed issue with opening attachments as discussed here: http://www.codeproject.com/Messages/4640325/File-path-mistakenly-ommitted-from-file-name-when-.aspx
 //       - Thanks to Graham
 //     > Fixed potential memory leak as discussed here: http://www.codeproject.com/Messages/5010012/Memory-leaks.aspx
@@ -250,7 +250,7 @@ CSmtp::CSmtp()
 	m_bHTML = false;
 	m_bReadReceipt = false;
 
-	m_sCharSet = "US-ASCII";
+	m_sCharSet = "UTF-8";
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1399,8 +1399,9 @@ void CSmtp::FormatHeader(char* header)
 		strcat(header, "Subject:  ");
 	else
 	{
-	  strcat(header, "Subject: ");
-	  strcat(header, m_sSubject.c_str());
+	  strcat(header, "Subject: =?utf-8?B?");
+	  strcat(header, base64_encode(m_sSubject.c_str(), m_sSubject.length()).c_str());
+	  strcat(header, "?=");
 	}
 	strcat(header, "\r\n");
 	
@@ -1686,7 +1687,7 @@ const char* CSmtp::GetSenderName() const
 //      AUTHOR: Jakub Piwowarczyk
 // AUTHOR/DATE: JP 2010-01-28
 ////////////////////////////////////////////////////////////////////////////////
-const char* CSmtp::GetSubject() const
+const wchar_t* CSmtp::GetSubject() const
 {
 	return m_sSubject.c_str();
 }
@@ -1853,7 +1854,7 @@ void CSmtp::SetSenderName(const char *Name)
 // AUTHOR/DATE: JP 2010-01-28
 //							JP 2010-07-08
 ////////////////////////////////////////////////////////////////////////////////
-void CSmtp::SetSubject(const char *Subject)
+void CSmtp::SetSubject(const wchar_t *Subject)
 {
 	m_sSubject = Subject;
 }

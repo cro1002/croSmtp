@@ -19,7 +19,7 @@ int main()
 
 		mail.SetLogin("olo101");
 
-		char tmpInput[8] = "";
+		char tmpInput[16] = "";
 		std::cout << "pass> ";
 		std::cin >> tmpInput;
 		mail.SetPassword(tmpInput);
@@ -27,7 +27,7 @@ int main()
 		mail.SetSenderName("OLO");
 		mail.SetSenderMail("olo101@zoho.com");	// 보내는 사람 주소
 		//mail.SetReplyTo("olo101@zoho.com");	// 회신 받을 주소
-		mail.SetSubject("Hello Mail");			// 제목
+		mail.SetSubject(L"한글제목 메일");			// 제목
 		mail.AddRecipient("pjm@ebook.co.kr");	// 받을 사람 주소
 		//mail.SetXPriority(XPRIORITY_NORMAL);
 		//mail.SetXMailer("The Bat! (v3.02) Professional");

@@ -212,13 +212,13 @@ public:
 	const char* GetReplyTo() const;
 	const char* GetMailFrom() const;
 	const char* GetSenderName() const;
-	const char* GetSubject() const;
+	const wchar_t* GetSubject() const;
 	const char* GetXMailer() const;
 	CSmptXPriority GetXPriority() const;
 	void Send();
 	void SetCharSet(const char *sCharSet);
 	void SetLocalHostName(const char *sLocalHostName);
-	void SetSubject(const char*);
+	void SetSubject(const wchar_t*);
 	void SetSenderName(const char*);
 	void SetSenderMail(const char*);
 	void SetReplyTo(const char*);
@@ -233,7 +233,7 @@ private:
 	std::string m_sLocalHostName;
 	std::string m_sMailFrom;
 	std::string m_sNameFrom;
-	std::string m_sSubject;
+	std::wstring m_sSubject;
 	std::string m_sCharSet;
 	std::string m_sXMailer;
 	std::string m_sReplyTo;

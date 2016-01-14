@@ -1,7 +1,7 @@
 /* 
    base64.cpp and base64.h
 
-   Copyright (C) 2004-2008 René Nyffenegger
+   Copyright (C) 2004-2008 Ren?Nyffenegger
 
    This source code is provided 'as-is', without any express or implied
    warranty. In no event will the author be held liable for any damages
@@ -21,7 +21,7 @@
 
    3. This notice may not be removed or altered from any source distribution.
 
-   René Nyffenegger rene.nyffenegger@adp-gmbh.ch
+   Ren?Nyffenegger rene.nyffenegger@adp-gmbh.ch
 
 */
 
@@ -124,4 +124,34 @@ std::string base64_decode(std::string const& encoded_string)
   }
 
   return ret;
+}
+
+
+std::string base64_encode(wchar_t const* bytes_to_encode, unsigned int in_len)
+{
+	std::string dest;
+	for (size_t i = 0; i < in_len; i++) {
+		wchar_t w = bytes_to_encode[i];
+		if (w <= 0x7f)
+			dest.push_back((char)w);
+		else if (w <= 0x7ff) {
+			dest.push_back(0xc0 | ((w >> 6) & 0x1f));
+			dest.push_back(0x80 | (w & 0x3f));
+		}
+		else if (w <= 0xffff) {
+			dest.push_back(0xe0 | ((w >> 12) & 0x0f));
+			dest.push_back(0x80 | ((w >> 6) & 0x3f));
+			dest.push_back(0x80 | (w & 0x3f));
+		}
+		else if (w <= 0x10ffff) {
+			dest.push_back(0xf0 | ((w >> 18) & 0x07));
+			dest.push_back(0x80 | ((w >> 12) & 0x3f));
+			dest.push_back(0x80 | ((w >> 6) & 0x3f));
+			dest.push_back(0x80 | (w & 0x3f));
+		}
+		else
+			dest.push_back('?');
+	}
+
+	return base64_encode((unsigned char*)dest.c_str(), dest.length());
 }

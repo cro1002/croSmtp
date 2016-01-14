@@ -6,4 +6,6 @@
 std::string base64_encode(unsigned char const* , unsigned int len);
 std::string base64_decode(std::string const& s);
 
+std::string base64_encode(wchar_t const*, unsigned int len);
+
 #endif
