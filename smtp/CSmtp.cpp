@@ -673,9 +673,7 @@ void CSmtp::Send()
 			else FileName = Attachments[FileId].substr(pos+1);
 
             //RFC 2047 - Use UTF-8 charset,base64 encode.
-            EncodedFileName = "=?UTF-8?B?";
-            EncodedFileName += base64_encode(FileName.c_str(), FileName.size());
-            EncodedFileName += "?=";
+			EncodedFileName = strToUtf8_Base64(FileName);
 
 			snprintf(SendBuf, BUFFER_SIZE, "--%s\r\n", BOUNDARY_TEXT);
 			strcat(SendBuf, "Content-Type: application/x-msdownload; name=\"");
@@ -1412,9 +1410,8 @@ void CSmtp::FormatHeader(char* header)
 		strcat(header, "Subject:  ");
 	else
 	{
-	  strcat(header, "Subject: =?utf-8?B?");
-	  strcat(header, base64_encode(m_sSubject.c_str(), m_sSubject.length()).c_str());
-	  strcat(header, "?=");
+		strcat(header, "Subject:");
+		strcat(header, strToUtf8_Base64(m_sSubject).c_str());
 	}
 	strcat(header, "\r\n");
 	
