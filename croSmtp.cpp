@@ -37,7 +37,7 @@ int main()
 		mail.AddMsgLine(L"");
 		mail.AddMsgLine(L"¾È³çÈ÷");
 
-		//mail.AddAttachment("c:\\Users\\Kang\\Downloads\\video_sample.mp4");
+		mail.AddAttachment("c:\\Users\\Kang\\Downloads\\video_sample.html");
 		//mail.AddAttachment("c:\\test2.exe");
 		//mail.AddAttachment("c:\\test3.txt");
 		mail.Send();

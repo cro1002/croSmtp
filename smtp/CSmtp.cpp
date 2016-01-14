@@ -639,8 +639,13 @@ void CSmtp::Send()
 			for(i=0;i<GetMsgLines();i++)
 			{
 				std::wstring msg = GetMsgLineText(i);
-				msg.append(L"\r\n");
+				if (i < GetMsgLines()-1) {
+					msg.append(L"\r\n");
+				}
 				snprintf(SendBuf, BUFFER_SIZE, "%s", base64_encode(msg.c_str(), msg.length()).c_str());
+				if (i == GetMsgLines()-1) {
+					snprintf(SendBuf, BUFFER_SIZE, "\r\n");
+				}
 				SendData(pEntry);
 			}
 		}
@@ -1432,7 +1437,7 @@ void CSmtp::FormatHeader(char* header)
 		else strcat(SendBuf,"Content-type: text/plain; charset=");
 		strcat(header, m_sCharSet.c_str());
 		strcat(header, "\r\n");
-		strcat(SendBuf,"Content-Transfer-Encoding: 7bit\r\n");
+		strcat(SendBuf,"Content-Transfer-Encoding: base64\r\n");
 		strcat(SendBuf,"\r\n");
 	}
 
