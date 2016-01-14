@@ -184,9 +184,9 @@ public:
 	CSmtp();
 	virtual ~CSmtp();
 
-	void AddRecipient(const char *email, const char *name=NULL);
-	void AddBCCRecipient(const char *email, const char *name=NULL);
-	void AddCCRecipient(const char *email, const char *name=NULL);    
+	void AddRecipient(const char *email, const wchar_t *name=NULL);
+	void AddBCCRecipient(const char *email, const wchar_t *name=NULL);
+	void AddCCRecipient(const char *email, const wchar_t *name=NULL);
 	void AddAttachment(const wchar_t* path);
 	void AddMsgLine(const wchar_t* text);
 	void ClearMessage();
@@ -211,7 +211,7 @@ public:
 	unsigned int GetMsgLines(void) const;
 	const char* GetReplyTo() const;
 	const char* GetMailFrom() const;
-	const char* GetSenderName() const;
+	const wchar_t* GetSenderName() const;
 	const wchar_t* GetSubject() const;
 	const char* GetXMailer() const;
 	CSmptXPriority GetXPriority() const;
@@ -219,7 +219,7 @@ public:
 	void SetCharSet(const char *sCharSet);
 	void SetLocalHostName(const char *sLocalHostName);
 	void SetSubject(const wchar_t*);
-	void SetSenderName(const char*);
+	void SetSenderName(const wchar_t*);
 	void SetSenderMail(const char*);
 	void SetReplyTo(const char*);
 	void SetReadReceipt(bool requestReceipt=true);
@@ -232,7 +232,7 @@ public:
 private:	
 	std::string m_sLocalHostName;
 	std::string m_sMailFrom;
-	std::string m_sNameFrom;
+	std::wstring m_sNameFrom;
 	std::wstring m_sSubject;
 	std::string m_sCharSet;
 	std::string m_sXMailer;
@@ -253,7 +253,7 @@ private:
 
 	struct Recipient
 	{
-		std::string Name;
+		std::wstring Name;
 		std::string Mail;
 	};
 

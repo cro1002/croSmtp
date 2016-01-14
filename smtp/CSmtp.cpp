@@ -201,6 +201,15 @@ unsigned char* CharToUnsignedChar(const char *strIn)
 	return strOut;
 }
 
+// =?UTF-8?B? ... ?= 형식으로 반환
+std::string strToUtf8_Base64(const std::wstring& str)
+{
+	std::string retStr("=?UTF-8?B?");
+	retStr.append(base64_encode(str.c_str(), str.size()));
+	retStr.append("?=");
+	return retStr;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 //        NAME: CSmtp
 // DESCRIPTION: Constructor of CSmtp class.
@@ -315,7 +324,7 @@ void CSmtp::AddAttachment(const wchar_t* Path)
 // AUTHOR/DATE: JP 2010-01-28
 //							JP 2010-07-07
 ////////////////////////////////////////////////////////////////////////////////
-void CSmtp::AddRecipient(const char *email, const char *name)
+void CSmtp::AddRecipient(const char *email, const wchar_t *name)
 {	
 	if(!email)
 		throw ECSmtp(ECSmtp::UNDEF_RECIPIENT_MAIL);
@@ -340,7 +349,7 @@ void CSmtp::AddRecipient(const char *email, const char *name)
 // AUTHOR/DATE: JP 2010-01-28
 //							JP 2010-07-07
 ////////////////////////////////////////////////////////////////////////////////
-void CSmtp::AddCCRecipient(const char *email, const char *name)
+void CSmtp::AddCCRecipient(const char *email, const wchar_t *name)
 {	
 	if(!email)
 		throw ECSmtp(ECSmtp::UNDEF_RECIPIENT_MAIL);
@@ -365,7 +374,7 @@ void CSmtp::AddCCRecipient(const char *email, const char *name)
 // AUTHOR/DATE: JP 2010-01-28
 //							JP 2010-07-07
 ////////////////////////////////////////////////////////////////////////////////
-void CSmtp::AddBCCRecipient(const char *email, const char *name)
+void CSmtp::AddBCCRecipient(const char *email, const wchar_t *name)
 {	
 	if(!email)
 		throw ECSmtp(ECSmtp::UNDEF_RECIPIENT_MAIL);
@@ -1300,7 +1309,7 @@ void CSmtp::FormatHeader(char* header)
 		{
 			if(i > 0)
 				to.append(",");
-			to += Recipients[i].Name;
+			to += strToUtf8_Base64(Recipients[i].Name);
 			to.append("<");
 			to += Recipients[i].Mail;
 			to.append(">");
@@ -1315,7 +1324,7 @@ void CSmtp::FormatHeader(char* header)
 		{
 			if(i > 0)
 				cc. append(",");
-			cc += CCRecipients[i].Name;
+			cc += strToUtf8_Base64(CCRecipients[i].Name);
 			cc.append("<");
 			cc += CCRecipients[i].Mail;
 			cc.append(">");
@@ -1331,7 +1340,7 @@ void CSmtp::FormatHeader(char* header)
 	if(!m_sMailFrom.size()) throw ECSmtp(ECSmtp::UNDEF_MAIL_FROM);
 	 
 	strcat(header,"From: ");
-	if(m_sNameFrom.size()) strcat(header, m_sNameFrom.c_str());
+	if(m_sNameFrom.size()) strcat(header, strToUtf8_Base64(m_sNameFrom).c_str());
 	 
 	strcat(header," <");
 	strcat(header,m_sMailFrom.c_str());
@@ -1358,7 +1367,7 @@ void CSmtp::FormatHeader(char* header)
 	{
 		strcat(header, "Disposition-Notification-To: ");
 		if(m_sReplyTo.size()) strcat(header, m_sReplyTo.c_str());
-		else strcat(header, m_sNameFrom.c_str());
+		else strcat(header, strToUtf8_Base64(m_sNameFrom).c_str());
 		strcat(header, "\r\n");
 	}
 
@@ -1676,7 +1685,7 @@ const char* CSmtp::GetMailFrom() const
 //      AUTHOR: Jakub Piwowarczyk
 // AUTHOR/DATE: JP 2010-01-28
 ////////////////////////////////////////////////////////////////////////////////
-const char* CSmtp::GetSenderName() const
+const wchar_t* CSmtp::GetSenderName() const
 {
 	return m_sNameFrom.c_str();
 }
@@ -1842,7 +1851,7 @@ void CSmtp::SetSenderMail(const char *EMail)
 // AUTHOR/DATE: JP 2010-01-28
 //							JP 2010-07-08
 ////////////////////////////////////////////////////////////////////////////////
-void CSmtp::SetSenderName(const char *Name)
+void CSmtp::SetSenderName(const wchar_t *Name)
 {
 	m_sNameFrom = Name;
 }
