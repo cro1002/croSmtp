@@ -28,6 +28,10 @@
 #include "base64.h"
 #include <iostream>
 
+// for wstring_convert
+#include <locale>
+#include <codecvt>
+
 static const std::string base64_chars = 
              "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
              "abcdefghijklmnopqrstuvwxyz"
@@ -95,7 +99,7 @@ std::string base64_decode(std::string const& encoded_string)
     char_array_4[i++] = encoded_string[in_]; in_++;
     if (i ==4) {
       for (i = 0; i <4; i++)
-        char_array_4[i] = base64_chars.find(char_array_4[i]);
+        char_array_4[i] = static_cast<unsigned char>( base64_chars.find(char_array_4[i]) );
 
       char_array_3[0] = (char_array_4[0] << 2) + ((char_array_4[1] & 0x30) >> 4);
       char_array_3[1] = ((char_array_4[1] & 0xf) << 4) + ((char_array_4[2] & 0x3c) >> 2);
@@ -113,7 +117,7 @@ std::string base64_decode(std::string const& encoded_string)
       char_array_4[j] = 0;
 
     for (j = 0; j <4; j++)
-      char_array_4[j] = base64_chars.find(char_array_4[j]);
+      char_array_4[j] = static_cast<unsigned char>( base64_chars.find(char_array_4[j]) );
 
     char_array_3[0] = (char_array_4[0] << 2) + ((char_array_4[1] & 0x30) >> 4);
     char_array_3[1] = ((char_array_4[1] & 0xf) << 4) + ((char_array_4[2] & 0x3c) >> 2);
@@ -129,29 +133,9 @@ std::string base64_decode(std::string const& encoded_string)
 
 std::string base64_encode(wchar_t const* bytes_to_encode, unsigned int in_len)
 {
-	std::string dest;
-	for (size_t i = 0; i < in_len; i++) {
-		wchar_t w = bytes_to_encode[i];
-		if (w <= 0x7f)
-			dest.push_back((char)w);
-		else if (w <= 0x7ff) {
-			dest.push_back(0xc0 | ((w >> 6) & 0x1f));
-			dest.push_back(0x80 | (w & 0x3f));
-		}
-		else if (w <= 0xffff) {
-			dest.push_back(0xe0 | ((w >> 12) & 0x0f));
-			dest.push_back(0x80 | ((w >> 6) & 0x3f));
-			dest.push_back(0x80 | (w & 0x3f));
-		}
-		else if (w <= 0x10ffff) {
-			dest.push_back(0xf0 | ((w >> 18) & 0x07));
-			dest.push_back(0x80 | ((w >> 12) & 0x3f));
-			dest.push_back(0x80 | ((w >> 6) & 0x3f));
-			dest.push_back(0x80 | (w & 0x3f));
-		}
-		else
-			dest.push_back('?');
-	}
+	// wstring -> utf-8 º¯È¯ http://stackoverflow.com/questions/4358870/convert-wstring-to-string-encoded-in-utf-8
+	std::wstring_convert<std::codecvt_utf8<wchar_t>> convert;
+	std::string utfBytes = convert.to_bytes(bytes_to_encode);
 
-	return base64_encode((unsigned char*)dest.c_str(), dest.length());
+	return base64_encode((unsigned char*)utfBytes.c_str(), utfBytes.size());
 }

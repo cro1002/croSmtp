@@ -636,18 +636,14 @@ void CSmtp::Send()
 		// send text message
 		if(GetMsgLines())
 		{
-			for(i=0;i<GetMsgLines();i++)
+			std::wstring getText;
+			for (i = 0; i < GetMsgLines(); i++)
 			{
-				std::wstring msg = GetMsgLineText(i);
-				if (i < GetMsgLines()-1) {
-					msg.append(L"\r\n");
-				}
-				snprintf(SendBuf, BUFFER_SIZE, "%s", base64_encode(msg.c_str(), msg.length()).c_str());
-				if (i == GetMsgLines()-1) {
-					snprintf(SendBuf, BUFFER_SIZE, "\r\n");
-				}
-				SendData(pEntry);
+				getText.append(GetMsgLineText(i));
+				if (i < GetMsgLines()-1) { getText.append(L"\r\n"); }
 			}
+			snprintf(SendBuf, BUFFER_SIZE, "%s\r\n", base64_encode(getText.c_str(), getText.length()).c_str());
+			SendData(pEntry);
 		}
 		else
 		{
