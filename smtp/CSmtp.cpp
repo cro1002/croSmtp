@@ -389,7 +389,7 @@ void CSmtp::AddBCCRecipient(const char *email, const char *name)
 // AUTHOR/DATE: JP 2010-01-28
 //							JP 2010-07-07
 ////////////////////////////////////////////////////////////////////////////////
-void CSmtp::AddMsgLine(const char* Text)
+void CSmtp::AddMsgLine(const wchar_t* Text)
 {
 	MsgBody.insert(MsgBody.end(), Text);
 }
@@ -502,13 +502,13 @@ void CSmtp::DelAttachments()
 //      AUTHOR: Jakub Piwowarczyk
 // AUTHOR/DATE: JP 2010-07-07
 ////////////////////////////////////////////////////////////////////////////////
-void CSmtp::ModMsgLine(unsigned int Line,const char* Text)
+void CSmtp::ModMsgLine(unsigned int Line,const wchar_t* Text)
 {
 	if(Text)
 	{
 		if(Line >= MsgBody.size())
 			throw ECSmtp(ECSmtp::OUT_OF_MSG_RANGE);
-		MsgBody.at(Line) = std::string(Text);
+		MsgBody.at(Line) = std::wstring(Text);
 	}
 }
 
@@ -638,7 +638,9 @@ void CSmtp::Send()
 		{
 			for(i=0;i<GetMsgLines();i++)
 			{
-				snprintf(SendBuf, BUFFER_SIZE, "%s\r\n",GetMsgLineText(i));
+				std::wstring msg = GetMsgLineText(i);
+				msg.append(L"\r\n");
+				snprintf(SendBuf, BUFFER_SIZE, "%s", base64_encode(msg.c_str(), msg.length()).c_str());
 				SendData(pEntry);
 			}
 		}
@@ -1413,7 +1415,7 @@ void CSmtp::FormatHeader(char* header)
 		else strcat(header, "Content-type: text/plain; charset=\"");
 		strcat(header, m_sCharSet.c_str());
 		strcat(header, "\"\r\n");
-		strcat(header,"Content-Transfer-Encoding: 7bit\r\n");
+		strcat(header,"Content-Transfer-Encoding: base64\r\n");
 		strcat(SendBuf,"\r\n");
 	}
 	else
@@ -1722,7 +1724,7 @@ CSmptXPriority CSmtp::GetXPriority() const
 	return m_iXPriority;
 }
 
-const char* CSmtp::GetMsgLineText(unsigned int Line) const
+const wchar_t* CSmtp::GetMsgLineText(unsigned int Line) const
 {
 	if(Line >= MsgBody.size())
 		throw ECSmtp(ECSmtp::OUT_OF_MSG_RANGE);

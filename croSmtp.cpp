@@ -15,7 +15,7 @@ int main()
 
 		mail.SetSMTPServer("smtp.zoho.com", 587);
 		mail.SetSecurityType(USE_TLS);
-		mail.SetCharSet("utf-8");
+		//mail.SetCharSet("utf-8"); // 기본값을 utf-8로 설정
 
 		mail.SetLogin("olo101");
 
@@ -31,15 +31,11 @@ int main()
 		mail.AddRecipient("pjm@ebook.co.kr");	// 받을 사람 주소
 		//mail.SetXPriority(XPRIORITY_NORMAL);
 		//mail.SetXMailer("The Bat! (v3.02) Professional");
-		mail.AddMsgLine("Hello!");
-		mail.AddMsgLine("");
-		//mail.AddMsgLine("...");
-		mail.AddMsgLine("How are you today?");
-		mail.AddMsgLine("");
-		mail.AddMsgLine("Regards");
-		//mail.ModMsgLine(5, "regards");
-		//mail.DelMsgLine(2);
-		//mail.AddMsgLine("User");
+		mail.AddMsgLine(L"안녕하세요!");
+		mail.AddMsgLine(L"");
+		mail.AddMsgLine(L"오늘은 어떠신가요?");
+		mail.AddMsgLine(L"");
+		mail.AddMsgLine(L"안녕히");
 
 		//mail.AddAttachment("c:\\Users\\Kang\\Downloads\\video_sample.mp4");
 		//mail.AddAttachment("c:\\test2.exe");
